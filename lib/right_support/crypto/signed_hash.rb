@@ -48,19 +48,23 @@ module RightSupport::Crypto
 
     def duck_type_check
       unless @digest.is_a?(Class) &&
-             @digest.instance_methods.include?('update') &&
-             @digest.instance_methods.include?('digest')
+             @digest.instance_methods.include?(str_or_symb('update')) &&
+             @digest.instance_methods.include?(str_or_symb('digest'))
         raise ArgumentError, "Digest class must respond to #update and #digest instance methods"
       end
-      unless @encoding.respond_to?(:dump)
+      unless @encoding.respond_to?(str_or_symb('dump'))
         raise ArgumentError, "Encoding class/module/object must respond to .dump method"
       end
-      if @public_key && !@public_key.respond_to?(:public_decrypt)
+      if @public_key && !@public_key.respond_to?(str_or_symb('public_decrypt'))
         raise ArgumentError, "Public key must respond to :public_decrypt (e.g. an OpenSSL::PKey instance)"
       end
-      if @private_key && !@private_key.respond_to?(:private_encrypt)
+      if @private_key && !@private_key.respond_to?(str_or_symb('private_encrypt'))
         raise ArgumentError, "Private key must respond to :private_encrypt (e.g. an OpenSSL::PKey instance)"
       end
+    end
+
+    def str_or_symb(method)
+      RUBY_VERSION > '1.9' ? method.to_sym : method.to_s
     end
 
     def time_check(t)
