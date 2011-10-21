@@ -173,7 +173,7 @@ module RightSupport::Net
           complete = true
           break
         rescue Exception => e
-          if to_raise = handle_exception(endpoint, e)
+          if to_raise = handle_exception(endpoint, e, t0)
             raise(to_raise)
           else
             @policy.bad(endpoint, t0, Time.now)
@@ -218,7 +218,7 @@ module RightSupport::Net
 
     # Decide what to do with an exception. The decision is influenced by the :fatal
     # option passed to the constructor.
-    def handle_exception(endpoint, e)
+    def handle_exception(endpoint, e, t0)
       fatal = @options[:fatal] || DEFAULT_FATAL_PROC
 
       #The option may be a proc or lambda; call it to get input
@@ -232,7 +232,8 @@ module RightSupport::Net
       #whether the exception we're handling is an instance of any mentioned exception
       #class
       fatal = fatal.any?{ |c| e.is_a?(c) } if fatal.respond_to?(:any?)
-      msg = "RequestBalancer: rescued #{fatal ? 'fatal' : 'retryable'} #{e.class.name} during request to #{endpoint}: #{e.message}"
+      duration = sprintf('%.4f', Time.now - t0)
+      msg = "RequestBalancer: rescued #{fatal ? 'fatal' : 'retryable'} #{e.class.name} during request to #{endpoint}: #{e.message} after #{duration} seconds"
       log_error msg
       @options[:on_exception].call(fatal, e, endpoint) if @options[:on_exception]
 
