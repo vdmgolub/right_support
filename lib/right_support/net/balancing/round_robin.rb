@@ -39,5 +39,10 @@ module RightSupport::Net::Balancing
     def bad(endpoint, t0, t1)
       #no-op; round robin does not care about failures
     end
+
+    def health_check(endpoint)
+      #no-op; round robin does not perform health checks
+      true
+    end
   end
 end

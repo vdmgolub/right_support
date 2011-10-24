@@ -137,7 +137,6 @@ module RightSupport::Net
       n          = 0
 
       retry_opt     = @options[:retry] || DEFAULT_RETRY_PROC
-      health_check  = @options[:health_check]
 
       loop do
         if complete
@@ -145,7 +144,7 @@ module RightSupport::Net
         else
           max_n = retry_opt
           max_n = max_n.call(@endpoints, n) if max_n.respond_to?(:call)
-          break if (max_n.is_a?(Integer) && n >= max_n) || !(max_n)
+          break if (max_n.is_a?(Integer) && n >= max_n) || [nil, false].include?(max_n)
         end
 
         endpoint, need_health_check  = @policy.next
@@ -154,12 +153,15 @@ module RightSupport::Net
         n += 1
         t0 = Time.now
 
-        # HealthCheck goes here
+        # Perform health check if necessary. Note that we guard this with a rescue, because the
+        # health check may raise an exception and we want to log the exception info if this happens.
         if need_health_check
           begin
-            @policy.health_check(endpoint)
+            unless @policy.health_check(endpoint)
+              log_error("RequestBalancer: health check failed to #{endpoint} because of non-true return value")
+              next
+            end
           rescue Exception => e
-            @policy.bad(endpoint, t0, Time.now)
             log_error("RequestBalancer: health check failed to #{endpoint} because of #{e.class.name}: #{e.message}")
             next
           end

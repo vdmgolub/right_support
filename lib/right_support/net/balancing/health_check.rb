@@ -125,7 +125,20 @@ module RightSupport::Net::Balancing
     end
     
     def health_check(endpoint)
-      @stack.increase_state(endpoint,t0,Time.now) unless @health_check.call(endpoint)      
+      t0 = Time.now
+      result = @health_check.call(endpoint)
+      t1 = Time.now
+      if result
+        @stack.decrease_state(endpoint, t0, t1)
+        return true
+      else
+        @stack.increase_state(endpoint, t0, t1)
+        return false
+      end
+    rescue Exception => e
+      t1 = Time.now
+      @stack.increase_state(endpoint, t0, t1)
+      raise e
     end
 
     # Proxy to EndpointStack

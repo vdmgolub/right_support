@@ -83,16 +83,28 @@ describe RightSupport::Net::RequestBalancer do
 
     context 'with :retry option' do
       it 'when :retry is Integer, stops after N total tries' do
-        pending
-        health_check = Proc.new do |endpoint|
-          return false
-        end
         lambda do
-          RightSupport::Net::RequestBalancer.new([1])
-        end.should raise_error
+          balancer = RightSupport::Net::RequestBalancer.new([1, 2, 3], :retry=>2, :fatal=>BigDeal)
+          balancer.request do |ep|
+            raise NoBigDeal
+          end
+        end.should raise_error(RightSupport::Net::NoResult)
       end
-      it 'when :retry is Proc, stops when call evaluates to true' do
-        pending
+
+      it 'when :retry is Proc, stops when call evaluates to false' do
+        @attempts = 0
+        retry_proc = Proc.new do |ep, n|
+          @attempts += 1
+          (@attempts < 2)
+        end
+
+        lambda do
+          balancer = RightSupport::Net::RequestBalancer.new([1, 2, 3], :retry=>retry_proc, :fatal=>BigDeal)
+          balancer.request do |ep|
+            raise NoBigDeal
+          end
+        end.should raise_error(RightSupport::Net::NoResult)
+        @attempts.should == 2
       end
     end
 
