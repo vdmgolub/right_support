@@ -20,11 +20,15 @@ module RightSupport::Crypto
       raise ArgumentError, "expires_at must be a Time in the future" unless time_check(expires_at)
 
       metadata = {:expires_at => expires_at}
-      @private_key.private_encrypt( digest( encode( canonicalize( frame(@hash, metadata) ) ) ) )
+      signature = @private_key.private_encrypt( digest( encode( canonicalize( frame(@hash, metadata) ) ) ) )
+
+      escape(signature)
     end
 
     def verify!(signature, expires_at)
       raise ArgumentError, "Cannot verify; missing public_key" unless @public_key
+
+      signature = unescape(signature)
 
       metadata = {:expires_at => expires_at}
       expected = digest( encode( canonicalize( frame(@hash, metadata) ) ) )
@@ -45,6 +49,16 @@ module RightSupport::Crypto
     end
 
     private
+
+    def escape(param)
+      require 'cgi' unless defined?(CGI) && defined?(CGI::escape)
+      CGI.escape(param)
+    end
+
+    def unescape(param)
+      require 'cgi' unless defined?(CGI) && defined?(CGI::unescape)
+      CGI.unescape(param)
+    end
 
     def duck_type_check
       unless @digest.is_a?(Class) &&
