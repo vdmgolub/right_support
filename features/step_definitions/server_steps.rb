@@ -24,6 +24,7 @@
 require 'webrick'
 require 'webrick/httpservlet'
 
+# Mimic a generic HTTP server with various configurable behaviors
 class MockServer < WEBrick::HTTPServer
   attr_accessor :thread, :port, :url
 
@@ -31,7 +32,7 @@ class MockServer < WEBrick::HTTPServer
     @port = options[:port] || (4096 + rand(4096))
     @url = "http://localhost:#{@port}"
 
-    logger = WEBrick::Log.new(STDERR, WEBrick::Log::ERROR)    
+    logger = WEBrick::Log.new(STDERR, WEBrick::Log::FATAL)
     super(options.merge(:Port => @port, :AccessLog => [], :Logger=>logger))
 
     # mount servlets via callback
@@ -44,8 +45,12 @@ class MockServer < WEBrick::HTTPServer
   end
 end
 
-# Mimic a server that exists but hangs without providing any response
-class HungServer
+# Mimic a server that exists but hangs without providing any response, not even
+# ICMP signals e.g. host unreachable or network unreachable. We simulate this
+# by pointing at a port of the RightScale (my) load balancer that is not allowed
+# by the security group, which causes the TCP SYN packets to be dropped with no
+# acknowledgement.
+class BlackholedServer
   attr_accessor :port, :url
 
   def initialize(options={})
@@ -67,41 +72,32 @@ After do
   end
 end
 
-Given /^(an?|\d+)? ([\w-]+) servers?$/ do |number, behavior|
+Given /^(an?|\d+)? (overloaded|blackholed) servers?$/ do |number, behavior|
   number = 0 if number =~ /no/
   number = 1 if number =~ /an?/
   number = number.to_i
   
-  case behavior
-    when 'well-behaved'
-      proc = Proc.new do
-        'Hi there! I am well-behaved.'
-      end
-    when 'faulty'
-      proc = Proc.new do
-        sleep(10)
-        'Hi there! I am faulty.'
-      end
-    when 'hung'
-      # no-op
-    else
-      raise ArgumentError, "Unknown server behavior #{behavior}"
-  end
-
   number.times do
-    if behavior == 'hung'
-      server = HungServer.new()
-    else
-      server = MockServer.new do |s|
-        s.mount('/', WEBrick::HTTPServlet::ProcHandler.new(proc))
-      end
+    case behavior
+      when 'overloaded'
+        proc = Proc.new do
+          sleep(10)
+          'Hi there! I am overloaded.'
+        end
+        server = MockServer.new do |s|
+          s.mount('/', WEBrick::HTTPServlet::ProcHandler.new(proc))
+        end
+      when 'blackholed'
+        server = BlackholedServer.new()
+      else
+        raise ArgumentError, "Unknown server behavior #{behavior}"
     end
 
     @mock_servers << server
   end
 end
 
-Given /^(an?|\d+)? servers? that always responds? with ([0-9]+)$/ do |number, status_code|
+Given /^(an?|\d+)? servers? that responds? with ([0-9]+)$/ do |number, status_code|
   number = 0 if number =~ /no/
   number = 1 if number =~ /an?/
   number = number.to_i
