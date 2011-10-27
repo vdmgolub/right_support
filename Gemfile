@@ -1,10 +1,10 @@
 source "http://rubygems.org"
 gemspec
 
-# Gems that are required for
 group :optional do
   gem 'net-ssh', "~> 2.0"
   gem 'rest-client', "~> 1.6"
+  gem 'rsmaz'
 end
 
 group :development do
