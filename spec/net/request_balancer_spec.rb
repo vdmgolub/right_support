@@ -27,24 +27,41 @@ end
 
 describe RightSupport::Net::RequestBalancer do
   def test_raise(fatal, do_raise, expect)
-    expect = [expect] unless expect.respond_to?(:first)
+    bases = []
+    base = do_raise.superclass
+    while base != Exception
+      bases << base
+      base = base.superclass
+    end
 
+    exception = expect.first
+    count = expect.last
     rb = RightSupport::Net::RequestBalancer.new([1,2,3], :fatal=>fatal)
-    tries = 0
-    l = lambda do
+    @tries = 0
+
+    code = lambda do
       rb.request do |_|
-        tries += 1
-        raise do_raise, 'bah' if do_raise
+        @tries += 1
+        next unless do_raise
+        if bases.include?(RestClient::ExceptionWithResponse)
+          #Special case: RestClient exceptions need an HTTP response, but they
+          #have stack recursion if we give them something other than a real
+          #HTTP response. Blech!
+          raise do_raise, nil
+        else
+          #Generic exception with message
+          raise do_raise, 'Bah humbug; fie on thee!'
+        end
       end
     end
 
-    if expect.first
-      l.should raise_error(expect.first)
+    if exception
+      code.should raise_error(expect[0])
     else
-      l.should_not raise_error
+      code.should_not raise_error
     end
 
-    tries.should == expect.last
+    @tries.should == count
   end
 
   def test_bad_endpoint_requests(number_of_endpoints)
@@ -294,6 +311,7 @@ describe RightSupport::Net::RequestBalancer do
 
       it 'retries HTTP timeouts' do
         test_raise(nil, MockRequestTimeout, [RightSupport::Net::NoResult, 3])
+        test_raise(nil, RestClient::RequestTimeout, [RightSupport::Net::NoResult, 3])
       end
 
       it 'does not retry HTTP 4xx other than timeout' do

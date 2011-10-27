@@ -149,13 +149,11 @@ module RightSupport::Net
       complete   = false
       n          = 0
 
-      retry_opt     = @options[:retry] || DEFAULT_RETRY_PROC
-
       loop do
         if complete
           break
         else
-          max_n = retry_opt
+          max_n = @options[:retry] || DEFAULT_RETRY_PROC
           max_n = max_n.call(@endpoints, n) if max_n.respond_to?(:call)
           break if (max_n.is_a?(Integer) && n >= max_n) || [nil, false].include?(max_n)
         end
