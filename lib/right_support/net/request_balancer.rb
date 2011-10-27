@@ -13,20 +13,33 @@ module RightSupport::Net
   #
   # The balancer does not actually perform requests by itself, which makes this
   # class usable for various network protocols, and potentially even for non-
-  # networking purposes. The block does all the work; the balancer merely selects
-  # a random request endpoint to pass to the block.
+  # networking purposes. The block passed to #request does all the work; the
+  # balancer merely selects a suitable endpoint to pass to its block.
   #
-  # PLEASE NOTE that the request balancer has a rather dumb notion of what is considered
-  # a "fatal" error for purposes of being able to retry; by default, it will consider
-  # any StandardError or any RestClient::Exception whose code is between 400-499. This
-  # MAY NOT BE SUFFICIENT for some uses of the request balancer! Please use the :fatal
-  # option if you need different behavior.
+  # PLEASE NOTE that it is VERY IMPORTANT that the balancer is able to properly
+  # distinguish between fatal and non-fatal (retryable) errors. Before you pass
+  # a :fatal option to the RequestBalancer constructor, carefully examine its
+  # default list of fatal exceptions and default logic for deciding whether a
+  # given exception is fatal! There are some subtleties.
   class RequestBalancer
     DEFAULT_RETRY_PROC = lambda do |ep, n|
       n < ep.size
     end
 
-    DEFAULT_FATAL_EXCEPTIONS = [ScriptError, ArgumentError, IndexError, LocalJumpError, NameError]
+    # Built-in Ruby exceptions that should be considered fatal. Normally one would be
+    # inclined to simply say RuntimeError or StandardError, but because gem authors
+    # frequently make unwise choices of exception base class, including these top-level
+    # base classes could cause us to falsely think that retryable exceptions are fatal.
+    #
+    # A good example of this phenomenon is the rest-client gem, whose base exception
+    # class is derived from RuntimeError!!
+    DEFAULT_FATAL_EXCEPTIONS = [
+      NoMemoryError, SystemStackError, SignalException, SystemExit,
+      ScriptError,
+      #Subclasses of StandardError, which we can't mention directly
+      ArgumentError, IndexError, LocalJumpError, NameError, RangeError,
+      RegexpError, ThreadError, TypeError, ZeroDivisionError
+    ]
 
     DEFAULT_FATAL_PROC = lambda do |e|
       if DEFAULT_FATAL_EXCEPTIONS.any? { |c| e.is_a?(c) }

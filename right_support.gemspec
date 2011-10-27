@@ -10,9 +10,9 @@ spec = Gem::Specification.new do |s|
   s.version = '1.0.11'
   s.date    = '2011-10-21'
 
-  s.authors = ['Tony Spataro']
-  s.email   = 'tony@rightscale.com'
-  s.homepage= 'https://github.com/xeger/right_support'
+  s.authors = ['Tony Spataro', 'Sergey Sergyenko', 'Ryan Williamson']
+  s.email   = 'support@rightscale.com'
+  s.homepage= 'https://github.com/rightscale/right_support'
 
   s.summary = %q{Reusable foundation code.}
   s.description = %q{A toolkit of useful foundation code: logging, input validation, etc.}

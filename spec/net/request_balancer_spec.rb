@@ -81,43 +81,79 @@ describe RightSupport::Net::RequestBalancer do
       end.should raise_exception(ArgumentError)
     end
 
-    context 'with :retry option' do
-      it 'when :retry is Integer, stops after N total tries' do
+    context 'with Integer :retry option' do
+      it 'stops after N total tries' do
         lambda do
-          balancer = RightSupport::Net::RequestBalancer.new([1, 2, 3], :retry=>2, :fatal=>BigDeal)
-          balancer.request do |ep|
+          @tries = 0
+          RightSupport::Net::RequestBalancer.new([1, 2, 3], :retry=>1).request do |u|
+            @tries += 1
             raise NoBigDeal
           end
-        end.should raise_error(RightSupport::Net::NoResult)
-      end
-
-      it 'when :retry is Proc, stops when call evaluates to false' do
-        @attempts = 0
-        retry_proc = Proc.new do |ep, n|
-          @attempts += 1
-          (@attempts < 2)
-        end
-
-        lambda do
-          balancer = RightSupport::Net::RequestBalancer.new([1, 2, 3], :retry=>retry_proc, :fatal=>BigDeal)
-          balancer.request do |ep|
-            raise NoBigDeal
-          end
-        end.should raise_error(RightSupport::Net::NoResult)
-        @attempts.should == 2
+        end.should raise_error
+        @tries.should == 1
       end
     end
 
-    context 'with :fatal option' do
-      it 'validates the arity (if applicable)' do
-        bad_lambda = lambda { |too, many, arguments| }
-        lambda do
-          RightSupport::Net::RequestBalancer.new([1,2], :fatal=>bad_lambda)
-        end.should raise_error(ArgumentError)
+    context 'with Proc :retry option' do
+      it 'stops when call evaluates to true'
+    end
 
-        lambda do
-          RightSupport::Net::RequestBalancer.new([1,2], :fatal=>BigDeal)
-        end.should_not raise_error
+    context ':fatal option' do
+      it 'has reasonable defaults' do
+        exceptions = RightSupport::Net::RequestBalancer::DEFAULT_FATAL_EXCEPTIONS - [SignalException]
+        balancer = RightSupport::Net::RequestBalancer.new([1])
+        exceptions.each do |klass|
+          lambda do
+            balancer.request { |ep| raise klass }
+          end.should raise_error(klass)
+        end
+      end
+
+      context 'with a Proc' do
+        it 'validates the arity' do
+          bad_lambda = lambda { |too, many, arguments| }
+          lambda do
+            RightSupport::Net::RequestBalancer.new([1,2], :fatal=>bad_lambda)
+          end.should raise_error(ArgumentError)
+        end
+
+        it 'delegates to the Proc' do
+          always_retry = lambda { |e| false }
+          balancer = RightSupport::Net::RequestBalancer.new([1,2], :fatal=>always_retry)
+
+          lambda do
+            balancer.request do |ep|
+              raise BigDeal
+            end
+          end.should raise_error(RightSupport::Net::NoResult)
+
+          lambda do
+            balancer.request do |ep|
+              raise ArgumentError
+            end
+          end.should raise_error(RightSupport::Net::NoResult)
+        end
+      end
+
+      context 'with an Exception' do
+        it 'considers that class of Exception to be fatal' do
+          balancer = RightSupport::Net::RequestBalancer.new([1], :fatal=>BigDeal)
+          lambda do
+            balancer.request { |ep| raise BigDeal }
+          end.should raise_error(BigDeal)
+        end
+      end
+
+      context 'with an Array' do
+        it 'considers any class in the array to be fatal' do
+          exceptions = [ArgumentError, BigDeal]
+          balancer = RightSupport::Net::RequestBalancer.new([1], :fatal=>exceptions)
+          exceptions.each do |klass|
+            lambda do
+              balancer.request { |ep| raise klass }
+            end.should raise_error(klass)
+          end
+        end
       end
     end
 

@@ -2,16 +2,16 @@ require 'spec_helper'
 
 describe RightSupport::Net::HTTPClient do
   it 'has a distinct method for common HTTP verbs' do
-    @client = RightSupport::Net::HTTPClient.new()
-    @client.should respond_to(:get)
-    @client.should respond_to(:post)
-    @client.should respond_to(:put)
-    @client.should respond_to(:delete)
+    @http_client = RightSupport::Net::HTTPClient.new()
+    @http_client.should respond_to(:get)
+    @http_client.should respond_to(:post)
+    @http_client.should respond_to(:put)
+    @http_client.should respond_to(:delete)
   end
 
   context 'with defaults passed to initializer' do
     before(:all) do
-      @client = RightSupport::Net::HTTPClient.new(:open_timeout=>999, :timeout=>101010,
+      @http_client = RightSupport::Net::HTTPClient.new(:open_timeout=>999, :timeout=>101010,
                                                   :headers=>{:moo=>:bah})
     end
 
@@ -22,7 +22,7 @@ describe RightSupport::Net::HTTPClient do
              :open_timeout=>999,
              :url=>'/moo', :headers=>{:moo=>:bah}}
         flexmock(RestClient::Request).should_receive(:execute).with(p)
-        @client.get('/moo')
+        @http_client.get('/moo')
       end
 
       it 'allows defaults to be overridden' do
@@ -31,7 +31,7 @@ describe RightSupport::Net::HTTPClient do
              :open_timeout=>3,
              :url=>'/moo', :headers=>{:joe=>:blow}}
         flexmock(RestClient::Request).should_receive(:execute).with(p)
-        @client.get('/moo', :open_timeout=>3, :headers=>{:joe=>:blow})
+        @http_client.get('/moo', :open_timeout=>3, :headers=>{:joe=>:blow})
       end
     end
   end
@@ -40,7 +40,7 @@ describe RightSupport::Net::HTTPClient do
     before(:each) do
       r = 'this is a short mock REST response'
       flexmock(RestClient::Request).should_receive(:execute).and_return(r).by_default
-      @client = RightSupport::Net::HTTPClient.new()
+      @http_client = RightSupport::Net::HTTPClient.new()
     end
 
     context 'given just a URL' do
@@ -51,7 +51,7 @@ describe RightSupport::Net::HTTPClient do
              :url=>'/moo', :headers=>{}}
         flexmock(RestClient::Request).should_receive(:execute).with(p)
 
-        @client.get('/moo')
+        @http_client.get('/moo')
       end
     end
 
@@ -63,7 +63,7 @@ describe RightSupport::Net::HTTPClient do
              :url=>'/moo', :headers=>{:mrm=>1, :blah=>:foo}}
         flexmock(RestClient::Request).should_receive(:execute).with(p)
 
-        @client.get('/moo', {:headers => {:mrm=>1, :blah=>:foo}})
+        @http_client.get('/moo', {:headers => {:mrm=>1, :blah=>:foo}})
       end
     end
 
@@ -76,7 +76,7 @@ describe RightSupport::Net::HTTPClient do
              :url=>'/moo', :headers=>{}}
         flexmock(RestClient::Request).should_receive(:execute).with(p)
 
-        @client.get('/moo', {:timeout => 42})
+        @http_client.get('/moo', {:timeout => 42})
       end
     end
     
@@ -86,7 +86,7 @@ describe RightSupport::Net::HTTPClient do
               :url=>'/moo', :headers=>{},:open_timeout => 1, :payload=>{:foo => :bar} }
         flexmock(RestClient::Request).should_receive(:execute).with(p)
 
-        @client.get('/moo', :open_timeout => 1, :payload=>{:foo => :bar})
+        @http_client.get('/moo', :open_timeout => 1, :payload=>{:foo => :bar})
       end
     end
   end
