@@ -39,9 +39,10 @@ describe RightSupport::Net::StringEncoder do
   #Ensure that encodings are symmetrical and commutative by testing round-trip
   #for all combinations.
   (1..ENCODINGS.length).each do |n|
-    context "when #{n} encoding(s) are specified" do
+    context "when using any #{n} encoding#{n > 1 ? 's' : ''}" do
       ENCODINGS.combination(n).each do |list|
-        it "should round-trip binary strings with #{list.join(', ')}" do
+        it "round-trips #{list.join(', ')}
+" do
           obj = RightSupport::Net::StringEncoder.new(*list)
           @strings.each do |str|
             obj.decode(obj.encode(str)).should == str

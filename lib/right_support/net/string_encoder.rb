@@ -21,10 +21,15 @@
 
 require 'cgi'
 require 'base64'
+require 'zlib'
 
 module RightSupport::Net
   class StringEncoder
-    ENCODINGS = [:base64, :url].freeze
+    ENCODINGS = [:base64, :url, :zlib]
+    if_require_succeeds('rsmaz') do
+      ENCODINGS << :rsmaz
+    end
+    ENCODINGS.freeze
 
     def initialize(*args)
       args = args.flatten
@@ -40,8 +45,14 @@ module RightSupport::Net
         case enc
           when :base64
             target = Base64.encode64(target)
+          when :rsmaz
+            target = RSmaz.compress(target)
           when :url
             target = CGI.escape(target)
+          when :zlib
+            stream = Zlib::Deflate.new(Zlib::BEST_COMPRESSION)
+            target = stream.deflate(target, Zlib::FINISH)
+            stream.close
         end
       end
 
@@ -53,8 +64,14 @@ module RightSupport::Net
         case enc
           when :base64
             target = Base64.decode64(target)
+          when :rsmaz
+            target = RSmaz.decompress(target)
           when :url
             target = CGI.unescape(target)
+          when :zlib
+            stream = Zlib::Inflate.new
+            target = stream.inflate(target)
+            stream.close
         end
       end
 

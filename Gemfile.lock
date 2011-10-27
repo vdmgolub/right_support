@@ -6,6 +6,7 @@ PATH
 GEM
   remote: http://rubygems.org/
   specs:
+    archive-tar-minitar (0.5.2)
     builder (3.0.0)
     columnize (0.3.2)
     cucumber (0.10.2)
@@ -23,11 +24,14 @@ GEM
     json (1.5.1)
     linecache (0.43)
     linecache (0.43-x86-mswin32)
+    linecache19 (0.5.12)
+      ruby_core_source (>= 0.1.4)
     mime-types (1.16)
     net-ssh (2.1.3)
     rake (0.8.7)
     rest-client (1.6.1)
       mime-types (>= 1.16)
+    rsmaz (0.0.4)
     rspec (1.3.1)
     ruby-debug (0.10.4)
       columnize (>= 0.1)
@@ -36,6 +40,16 @@ GEM
       linecache (>= 0.3)
     ruby-debug-base (0.10.4-x86-mswin32)
       linecache (>= 0.3)
+    ruby-debug-base19 (0.11.25)
+      columnize (>= 0.3.1)
+      linecache19 (>= 0.5.11)
+      ruby_core_source (>= 0.1.4)
+    ruby-debug19 (0.11.6)
+      columnize (>= 0.3.1)
+      linecache19 (>= 0.5.11)
+      ruby-debug-base19 (>= 0.11.19)
+    ruby_core_source (0.1.5)
+      archive-tar-minitar (>= 0.5.2)
     term-ansicolor (1.0.5)
 
 PLATFORMS
@@ -49,5 +63,7 @@ DEPENDENCIES
   rake (>= 0.8.7)
   rest-client (~> 1.6)
   right_support!
+  rsmaz
   rspec (~> 1.3)
   ruby-debug (>= 0.10)
+  ruby-debug19 (>= 0.11.6)
