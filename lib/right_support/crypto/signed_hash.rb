@@ -20,15 +20,11 @@ module RightSupport::Crypto
       raise ArgumentError, "expires_at must be a Time in the future" unless time_check(expires_at)
 
       metadata = {:expires_at => expires_at}
-      signature = @private_key.private_encrypt( digest( encode( canonicalize( frame(@hash, metadata) ) ) ) )
-
-      escape(signature)
+      @private_key.private_encrypt( digest( encode( canonicalize( frame(@hash, metadata) ) ) ) )
     end
 
     def verify!(signature, expires_at)
       raise ArgumentError, "Cannot verify; missing public_key" unless @public_key
-
-      signature = unescape(signature)
 
       metadata = {:expires_at => expires_at}
       expected = digest( encode( canonicalize( frame(@hash, metadata) ) ) )
