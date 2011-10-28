@@ -46,16 +46,6 @@ module RightSupport::Crypto
 
     private
 
-    def escape(param)
-      require 'cgi' unless defined?(CGI) && defined?(CGI::escape)
-      CGI.escape(param)
-    end
-
-    def unescape(param)
-      require 'cgi' unless defined?(CGI) && defined?(CGI::unescape)
-      CGI.unescape(param)
-    end
-
     def duck_type_check
       unless @digest.is_a?(Class) &&
              @digest.instance_methods.include?(str_or_symb('update')) &&
