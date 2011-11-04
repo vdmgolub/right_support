@@ -153,9 +153,9 @@ module RightSupport::Net
         if complete
           break
         else
-          max_n = @options[:retry] || DEFAULT_RETRY_PROC
-          max_n = max_n.call(@endpoints, n) if max_n.respond_to?(:call)
-          break if (max_n.is_a?(Integer) && n >= max_n) || [nil, false].include?(max_n)
+          do_retry = @options[:retry] || DEFAULT_RETRY_PROC
+          do_retry = do_retry.call(@endpoints, n) if do_retry.respond_to?(:call)
+          break if (do_retry.is_a?(Integer) && n >= do_retry) || [nil, false].include?(do_retry)
         end
 
         endpoint, need_health_check  = @policy.next

@@ -112,7 +112,23 @@ describe RightSupport::Net::RequestBalancer do
     end
 
     context 'with Proc :retry option' do
-      it 'stops when call evaluates to true'
+      it 'stops when call evaluates to false' do
+        @tries = 0
+
+        proc = Proc.new do |ep, n|
+          @tries < 1
+        end
+
+        balancer = RightSupport::Net::RequestBalancer.new([1, 2, 3], :retry => proc)
+        lambda do
+          balancer.request do |u|
+            @tries += 1
+            raise NoBigDeal
+          end
+        end.should raise_error(RightSupport::Net::NoResult)
+
+        @tries.should == 1
+      end
     end
 
     context ':fatal option' do
@@ -305,8 +321,13 @@ describe RightSupport::Net::RequestBalancer do
         end
       end
 
-      it 'does not retry ArgumentError and other program errors' do
-        pending
+      it 'does not retry program errors' do
+        list = [1,2,3,4,5,6,7,8,9,10]
+        rb = RightSupport::Net::RequestBalancer.new(list)
+
+        [ArgumentError, LoadError, NameError].each do |klass|
+          test_raise(nil, klass, [klass, 1])
+        end
       end
 
       it 'retries HTTP timeouts' do
