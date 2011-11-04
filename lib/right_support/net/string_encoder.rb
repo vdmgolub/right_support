@@ -23,14 +23,28 @@ require 'cgi'
 require 'base64'
 require 'zlib'
 
+#
+# A tool that encodes (binary or ASCII) strings into 7-bit ASCII
+# using one or more encoding algorithms which are applied sequentially.
+# The order of algorithms is reversed on decode, naturally!
+#
+# This class is designed to be used with network protocols implemented
+# on top of HTTP, where binary data needs to be encapsulated in URL query
+# strings, request bodies or other textual payloads. Sometimes multiple
+# encodings are necessary in order to prevent unnecessary expansion of
+# the encoded text.
+#
 module RightSupport::Net
   class StringEncoder
-    ENCODINGS = [:base64, :url, :zlib]
-    if_require_succeeds('rsmaz') do
-      ENCODINGS << :rsmaz
-    end
+    ENCODINGS = [:base64, :url]
     ENCODINGS.freeze
 
+    #
+    # Create a new instance.
+    #
+    # === Parameters
+    # *encodings:: list of Symbols representing an ordered sequence of encodings
+    #
     def initialize(*args)
       args = args.flatten
       args.each do |enc|
@@ -40,42 +54,46 @@ module RightSupport::Net
       @encodings = args
     end
 
-    def encode(target)
+    #
+    # Encode a binary or textual string.
+    #
+    # === Parameters
+    # value(String):: the value to be encoded
+    #
+    # === Return
+    # The encoded value, with all encodings applied.
+    def encode(value)
       @encodings.each do |enc|
         case enc
           when :base64
-            target = Base64.encode64(target)
-          when :rsmaz
-            target = RSmaz.compress(target)
+            value = Base64.encode64(value)
           when :url
-            target = CGI.escape(target)
-          when :zlib
-            stream = Zlib::Deflate.new(Zlib::BEST_COMPRESSION)
-            target = stream.deflate(target, Zlib::FINISH)
-            stream.close
+            value = CGI.escape(value)
         end
       end
 
-      target
+      value
     end
 
-    def decode(target)
+    #
+    # Decode a binary or textual string.
+    #
+    # === Parameters
+    # value(String):: the value to be decoded
+    #
+    # === Return
+    # The decoded string value
+    def decode(value)
       @encodings.reverse.each do |enc|
         case enc
           when :base64
-            target = Base64.decode64(target)
-          when :rsmaz
-            target = RSmaz.decompress(target)
+            value = Base64.decode64(value)
           when :url
-            target = CGI.unescape(target)
-          when :zlib
-            stream = Zlib::Inflate.new
-            target = stream.inflate(target)
-            stream.close
+            value = CGI.unescape(value)
         end
       end
 
-      target
+      value
     end
   end
 end

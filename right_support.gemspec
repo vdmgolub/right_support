@@ -7,15 +7,17 @@ spec = Gem::Specification.new do |s|
   s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
 
   s.name    = 'right_support'
-  s.version = '1.0.7'
-  s.date    = '2011-10-13'
+  s.version = '1.1.0'
+  s.date    = '2011-11-03'
 
   s.authors = ['Tony Spataro']
   s.email   = 'tony@rightscale.com'
-  s.homepage= 'https://github.com/xeger/right_support'
+  s.homepage= 'https://github.com/rightscale/right_support'
 
   s.summary = %q{Reusable foundation code.}
-  s.description = %q{A toolkit of useful foundation code: logging, input validation, etc.}
+  s.description = %q{A toolkit of useful, reusable foundation code created by RightScale.}
+
+  s.add_dependency('json', ['~> 1.4'])
 
   basedir = File.dirname(__FILE__)
   candidates = ['right_support.gemspec', 'LICENSE', 'README.rdoc'] + Dir['lib/**/*']

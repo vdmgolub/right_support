@@ -1,7 +1,8 @@
 PATH
   remote: .
   specs:
-    right_support (1.0.7)
+    right_support (1.1.0)
+      json (~> 1.4)
 
 GEM
   remote: http://rubygems.org/
@@ -30,7 +31,6 @@ GEM
     rake (0.8.7)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    rsmaz (0.0.4)
     rspec (1.3.1)
     ruby-debug (0.10.4)
       columnize (>= 0.1)
@@ -60,7 +60,6 @@ DEPENDENCIES
   rake (>= 0.8.7)
   rest-client (~> 1.6)
   right_support!
-  rsmaz
   rspec (~> 1.3)
   ruby-debug (>= 0.10)
   ruby-debug19 (>= 0.11.6)

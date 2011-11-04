@@ -1,12 +1,15 @@
 source "http://rubygems.org"
 gemspec
 
+# Gems that RightSupport can optionally make use of, but which it does
+# not require to be installed. These would be "optional dependencies"
+# if gemspecs allowed for them.
 group :optional do
   gem 'net-ssh', "~> 2.0"
   gem 'rest-client', "~> 1.6"
-  gem 'rsmaz'
 end
 
+# Gems used during test and development of RightSupport.
 group :development do
   gem 'rake', ">= 0.8.7"
   gem 'ruby-debug', ">= 0.10", :platforms=>:ruby_18
