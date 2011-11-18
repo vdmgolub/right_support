@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'flexmock'
+require 'ruby-debug'
 
 Spec::Runner.configure do |config|
   config.mock_with :flexmock
@@ -106,7 +107,7 @@ def random_value(klass=nil, depth=0)
 
   if klass == String
     result = ''
-    rand(40).times { result << (?a + rand(26)) }
+    rand(40).times { result << (0x61 + rand(26)).to_s }
   elsif klass == Integer
     result = rand(0xffffff)
   elsif klass == Float

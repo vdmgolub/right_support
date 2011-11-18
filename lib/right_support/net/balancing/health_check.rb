@@ -23,7 +23,10 @@
 require 'set'
 
 module RightSupport::Net::Balancing
-  
+
+  # TODO refactor this class. We store too much unstructured data about EPs; should have a simple
+  # class representing EP state, and then perhaps move what logic remains into the HealthCheck class
+  # instead of putting it here.
   class EndpointsStack
     DEFAULT_YELLOW_STATES = 4
     DEFAULT_RESET_TIME    = 300
@@ -111,9 +114,17 @@ module RightSupport::Net::Balancing
       @counter += 1 unless endpoints.size < @last_size
       @counter = 0 if @counter == endpoints.size
       @last_size = endpoints.size
-      
-      # Returns false or true, depending on whether EP is yellow or not
-      [ endpoints[@counter][0], endpoints[@counter][1][:n_level] != 0 ]
+
+      # Hash#select returns a Hash in ruby1.9, but an Array of pairs in ruby1.8.
+      # This should really be encapsulated in EndpointsStack...
+      if RUBY_VERSION >= '1.9'
+        key = endpoints.keys[@counter]
+        next_endpoint = [ key, endpoints[key][:n_level] != 0 ]
+      else
+        next_endpoint = [ endpoints[@counter][0], endpoints[@counter][1][:n_level] != 0 ]
+      end
+
+      next_endpoint
     end
 
     def good(endpoint, t0, t1)

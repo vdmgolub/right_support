@@ -23,18 +23,34 @@ require 'cgi'
 require 'base64'
 require 'zlib'
 
-#
-# A tool that encodes (binary or ASCII) strings into 7-bit ASCII
-# using one or more encoding algorithms which are applied sequentially.
-# The order of algorithms is reversed on decode, naturally!
-#
-# This class is designed to be used with network protocols implemented
-# on top of HTTP, where binary data needs to be encapsulated in URL query
-# strings, request bodies or other textual payloads. Sometimes multiple
-# encodings are necessary in order to prevent unnecessary expansion of
-# the encoded text.
-#
 module RightSupport::Net
+  #
+  # A tool that encodes (binary or ASCII) strings into 7-bit ASCII
+  # using one or more encoding algorithms which are applied sequentially.
+  # The order of algorithms is reversed on decode, naturally!
+  #
+  # This class is designed to be used with network protocols implemented
+  # on top of HTTP, where binary data needs to be encapsulated in URL query
+  # strings, request bodies or other textual payloads. Sometimes multiple
+  # encodings are necessary in order to prevent unnecessary expansion of
+  # the encoded text.
+  #
+  # == Ruby 1.9 and Character Encodings
+  #
+  # === Input Strings
+  # The #encode and #decode methods accept strings with any encoding, and do not perform
+  # any conversion or coercion between encodings. Strings are passed unmodified to the
+  # underlying encoding libraries.
+  #
+  # === Output Strings
+  # The #encode method always returns strings with an encoding of US-ASCII, because the
+  # output of all encodings is guaranteed to be 7-bit ASCII.
+  #
+  # The #decode method always returns strings with an encoding of ASCII-8BIT (aka BINARY)
+  # because there is no way to determine the correct encoding. The caller of #decode
+  # should use String#force_encoding to coerce the output value to an appropriate encoding
+  # before displaying or manipulating the output.
+  #
   class StringEncoder
     ENCODINGS = [:base64, :url]
     ENCODINGS.freeze
@@ -93,7 +109,7 @@ module RightSupport::Net
         end
       end
 
-      value
+      value.force_encoding(Encoding::ASCII_8BIT)
     end
   end
 end
