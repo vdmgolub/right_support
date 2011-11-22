@@ -12,7 +12,12 @@ describe RightSupport::Net::StringEncoder do
     (1..10).each do |i|
       s = ''
       i.times { s << rand(256) }
-      @strings << s
+
+      if RUBY_VERSION >= '1.9'
+        @strings << s.force_encoding(Encoding::ASCII_8BIT)
+      else
+        @strings << s
+      end
     end
   end
 
@@ -41,8 +46,7 @@ describe RightSupport::Net::StringEncoder do
   (1..ENCODINGS.length).each do |n|
     context "when using any #{n} encoding#{n > 1 ? 's' : ''}" do
       ENCODINGS.combination(n).each do |list|
-        it "round-trips #{list.join(', ')}
-" do
+        it "round-trips #{list.join(', ')}" do
           obj = RightSupport::Net::StringEncoder.new(*list)
           @strings.each do |str|
             obj.decode(obj.encode(str)).should == str

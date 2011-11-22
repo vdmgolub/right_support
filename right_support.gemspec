@@ -7,8 +7,8 @@ spec = Gem::Specification.new do |s|
   s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
 
   s.name    = 'right_support'
-  s.version = '1.1.0'
-  s.date    = '2011-11-03'
+  s.version = '1.1.1'
+  s.date    = '2011-11-17'
 
   s.authors = ['Tony Spataro', 'Sergey Sergyenko', 'Ryan Williamson']
   s.email   = 'support@rightscale.com'
@@ -17,7 +17,7 @@ spec = Gem::Specification.new do |s|
   s.summary = %q{Reusable foundation code.}
   s.description = %q{A toolkit of useful, reusable foundation code created by RightScale.}
 
-  s.add_dependency('json', ['~> 1.4'])
+  s.add_dependency('yajl-ruby', ['~> 1.1'])
 
   basedir = File.dirname(__FILE__)
   candidates = ['right_support.gemspec', 'LICENSE', 'README.rdoc'] + Dir['lib/**/*']

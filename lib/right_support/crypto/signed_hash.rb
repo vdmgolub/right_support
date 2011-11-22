@@ -1,10 +1,10 @@
-require 'json'
+require 'yajl'
 
 module RightSupport::Crypto
   class SignedHash
     DEFAULT_OPTIONS = {
       :digest   => Digest::SHA1,
-      :encoding => JSON
+      :encoding => Yajl
     }
 
     def initialize(hash={}, options={})
