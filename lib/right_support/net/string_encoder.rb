@@ -109,7 +109,8 @@ module RightSupport::Net
         end
       end
 
-      value.force_encoding(Encoding::ASCII_8BIT)
+      value.force_encoding(Encoding::ASCII_8BIT) if value.respond_to?(:force_encoding)
+      value
     end
   end
 end
