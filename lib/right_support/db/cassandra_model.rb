@@ -41,8 +41,8 @@ module RightSupport::DB
         list = real_get(k,opt)  
       end
       
-      def get(key)
-        if (hash = real_get(key)).empty?
+      def get(key,opt={})
+        if (hash = real_get(key,opt)).empty?
           nil
         else
           new(key, hash)
