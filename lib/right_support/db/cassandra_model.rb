@@ -57,6 +57,10 @@ module RightSupport::DB
         end
       end
 
+      def get_columns(key, columns, subcolumns = nil, opt = {})
+        do_op(:get_columns, column_family, key, columns, subcolumns, opt)
+      end
+
       def insert(key, values,opt={})
         do_op(:insert, column_family, key, values,opt)
       end
