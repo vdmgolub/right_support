@@ -41,8 +41,8 @@ module RightSupport::DB
         list = real_get(k,opt)  
       end
       
-      def get(key)
-        if (hash = real_get(key)).empty?
+      def get(key,opt={})
+        if (hash = real_get(key,opt)).empty?
           nil
         else
           new(key, hash)
@@ -55,6 +55,10 @@ module RightSupport::DB
         else      
           do_op(:get, column_family, k, opt)
         end
+      end
+
+      def get_columns(key, columns, subcolumns = nil, opt = {})
+        do_op(:get_columns, column_family, key, columns, subcolumns, opt)
       end
 
       def insert(key, values,opt={})
@@ -79,7 +83,7 @@ module RightSupport::DB
 
       def reconnect
         config = @@config[ENV["RACK_ENV"]]
-        @@conn = Cassandra.new(keyspace, config["server"],{:timeout => RightSupport::CassandraModel::DEFAULT_TIMEOUT})
+        @@conn = Cassandra.new(keyspace, config["server"],{:timeout => RightSupport::DB::CassandraModel::DEFAULT_TIMEOUT})
         @@conn.disable_node_auto_discovery!
       end
 
