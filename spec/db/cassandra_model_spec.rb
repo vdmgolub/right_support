@@ -22,24 +22,41 @@ describe RightSupport::DB::CassandraModel do
     @key            = 'key'
     @value          = 'foo'
     @offset         = 'bar'
-    
+    @opt            = {}
+    @instance = RightSupport::DB::CassandraModel.new(@key, {@offset => @value})
+
     @conn = flexmock(:conn)
     flexmock(Cassandra).should_receive(:new).with(@keyspace + "_" + @env,@server,@timeout).and_return(@conn)
     @conn.should_receive(:disable_node_auto_discovery!).and_return(true)
-    @conn.should_receive(:insert).with(@column_family,@keyspace,@key, {@offset => @value}).and_return(true)
-    @conn.should_receive(:remove).with(@column_family,@keyspace,@key).and_return(true)
+    @conn.should_receive(:insert).with(@column_family,@key, {@offset => @value},@opt).and_return(true)
+    @conn.should_receive(:remove).with(@column_family,@key).and_return(true)
+    @conn.should_receive(:get).with(@column_family)
     @conn.should_receive(:get_columns).and_return(true)
   end
 
-  context :save do
-    it 'inserts a record' do
-      RightSupport::DB::CassandraModel.insert(@keyspace, @key, {@offset => @value}).should be_true
+  describe "instance\'s interface" do
+     context :save do
+      it 'saves a record using instance\'s interface' do
+        @instance.save
+      end
+    end
+
+    context :destroy do
+      it 'destroys a record using instance\'s interface' do
+        @instance.destroy
+      end
     end
   end
 
-  context :destroy do
-    it 'removes a record' do
-      RightSupport::DB::CassandraModel.remove(@keyspace, @key).should be_true
+  context :insert do
+    it 'inserts a record by using the class method' do
+      RightSupport::DB::CassandraModel.insert(@key, {@offset => @value},@opt).should be_true
+    end
+  end
+
+  context :remove do
+    it 'removes a record by using the class method' do
+      RightSupport::DB::CassandraModel.remove(@key).should be_true
     end
   end
 
