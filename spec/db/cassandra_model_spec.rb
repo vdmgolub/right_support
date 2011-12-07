@@ -22,41 +22,51 @@ describe RightSupport::DB::CassandraModel do
     @key            = 'key'
     @value          = 'foo'
     @offset         = 'bar'
+    @attrs          = {@offset => @value}
     @opt            = {}
-    @instance = RightSupport::DB::CassandraModel.new(@key, {@offset => @value})
+
+    @instance = RightSupport::DB::CassandraModel.new(@key, @attrs)
 
     @conn = flexmock(:conn)
     flexmock(Cassandra).should_receive(:new).with(@keyspace + "_" + @env,@server,@timeout).and_return(@conn)
     @conn.should_receive(:disable_node_auto_discovery!).and_return(true)
-    @conn.should_receive(:insert).with(@column_family,@key, {@offset => @value},@opt).and_return(true)
+    @conn.should_receive(:insert).with(@column_family,@key, @attrs,@opt).and_return(true)
     @conn.should_receive(:remove).with(@column_family,@key).and_return(true)
-    @conn.should_receive(:get).with(@column_family)
-    @conn.should_receive(:get_columns).and_return(true)
+    @conn.should_receive(:get).with(@column_family,@key,@opt).and_return(@attrs)
   end
 
   describe "instance\'s interface" do
      context :save do
-      it 'saves a record using instance\'s interface' do
-        @instance.save
+      it 'saves the record' do
+        @instance.save.should be_true
       end
     end
 
     context :destroy do
-      it 'destroys a record using instance\'s interface' do
-        @instance.destroy
+      it 'destroys the record' do
+        @instance.destroy.should be_true
+      end
+    end
+
+    context :reload do
+      it 'returns a new object for the record' do
+        @instance.reload.should be_a_kind_of(RightSupport::DB::CassandraModel)
+        @instance.reload!.should be_a_kind_of(RightSupport::DB::CassandraModel)
       end
     end
   end
 
-  context :insert do
-    it 'inserts a record by using the class method' do
-      RightSupport::DB::CassandraModel.insert(@key, {@offset => @value},@opt).should be_true
+  describe "general interface" do
+    context :insert do
+      it 'inserts a record by using the class method' do
+        RightSupport::DB::CassandraModel.insert(@key, @attrs,@opt).should be_true
+      end
     end
-  end
 
-  context :remove do
-    it 'removes a record by using the class method' do
-      RightSupport::DB::CassandraModel.remove(@key).should be_true
+    context :remove do
+      it 'removes a record by using the class method' do
+        RightSupport::DB::CassandraModel.remove(@key).should be_true
+      end
     end
   end
 
