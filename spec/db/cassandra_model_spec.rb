@@ -33,6 +33,7 @@ describe RightSupport::DB::CassandraModel do
     @conn.should_receive(:insert).with(@column_family,@key, @attrs,@opt).and_return(true)
     @conn.should_receive(:remove).with(@column_family,@key).and_return(true)
     @conn.should_receive(:get).with(@column_family,@key,@opt).and_return(@attrs)
+    @conn.should_receive(:multi_get).with(@column_family,[1,2],@opt).and_return(Hash.new)
   end
 
   describe "instance\'s interface" do
@@ -68,6 +69,11 @@ describe RightSupport::DB::CassandraModel do
         RightSupport::DB::CassandraModel.remove(@key).should be_true
       end
     end
-  end
 
+    context :all do
+      it 'returns all existing records for the specified array of keys' do
+        RightSupport::DB::CassandraModel.all([1,2]).should be_a_kind_of(Hash)
+      end
+    end
+  end
 end
