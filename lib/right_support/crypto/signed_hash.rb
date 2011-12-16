@@ -4,7 +4,7 @@ module RightSupport::Crypto
   class SignedHash
     DEFAULT_OPTIONS = {
       :digest   => Digest::SHA1,
-      :encoding => Yajl
+      :encoding => YAML
     }
 
     def initialize(hash={}, options={})
